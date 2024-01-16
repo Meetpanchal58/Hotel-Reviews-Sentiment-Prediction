@@ -1,0 +1,8 @@
+flask
+numpy
+scikit-learn
+sklearn_pandas
+imbalanced-learn
+nltk
+nltk.corpus
+nltk.stem
