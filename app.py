@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+import streamlit as st
 import pandas as pd
 from pickle import load
 import re
@@ -11,10 +11,6 @@ nltk.download('stopwords')
 nltk.download('wordnet')
 stop_words = set(stopwords.words('english'))
 wnl = WordNetLemmatizer()
-
-
-# Creating the flask app
-app = Flask(__name__)
 
 
 def clean_text(text):
@@ -57,36 +53,43 @@ def clean_text(text):
     
     return cleaned_text
 
+
+
 def clean_text_frame(X):
     b = clean_text
     return X.applymap(b)
 
 
-# Loading the model
+
+# Load the model
 model = load(open('HotelReviewSentimentAnalysis.joblib', 'rb'))
 
-# Home Page
-@app.route('/')
-def home():
-    return render_template('index.html')
 
-# Prediction Page
-@app.route('/predict', methods=['POST'])
-def predict():
-    if request.method == 'POST':
-        review = request.form['review']
-        new = {'Review': review}
-        features = pd.DataFrame(new, index=[0])
+def predict_sentiment(review):
+    new = {'Review': review}
+    features = pd.DataFrame(new, index=[0])
+    result = model.predict(features)
+    sentiment_result = "Positive" if result[0] == 1 else "Negative"
+    return sentiment_result
 
-        # Model Prediction
-        result = model.predict(features)
+# Streamlit App
+def main():
+    st.title("Hotel Review Sentiment Analyzer")
 
-        # Convert result to string
-        sentiment_result = "Positive" if result[0] == 1 else "Negative"
+    # User input for review
+    review = st.text_area("Enter your hotel review:", "")
 
-        # Rendering the result on HTML page
-        return render_template('index.html', result=sentiment_result)
+    if st.button("Analyze Sentiment"):
+        # Clean and analyze sentiment
+        cleaned_review = clean_text(review)
+        result = predict_sentiment(cleaned_review)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+        # Display result
+        st.subheader("Analysis Result:")
+        if result == "Positive":
+            st.success("Positive Sentiment 😊")
+        else:
+            st.error("Negative Sentiment 😡")
 
+if __name__ == "__main__":
+    main()

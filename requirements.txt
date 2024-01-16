@@ -1,8 +1,6 @@
-flask
+streamlit
 numpy
 scikit-learn
 sklearn_pandas
 imbalanced-learn
-nltk
-nltk.corpus
-nltk.stem
+nltk==3.6.5
