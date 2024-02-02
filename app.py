@@ -65,14 +65,21 @@ def clean_text_frame(X):
 model = load(open('HotelReviewSentimentAnalysis.joblib', 'rb'))
 
 
+# Modify predict_sentiment function to return sentiment and attributes
 def predict_sentiment(review):
     new = {'Review': review}
     features = pd.DataFrame(new, index=[0])
     result = model.predict(features)
     sentiment_result = "Positive" if result[0] == 1 else "Negative"
-    return sentiment_result
+    
+    # Get attributes (keywords) based on the sentiment
+    cleaned_review = clean_text(review)
+    tokens = nltk.word_tokenize(cleaned_review)
+    attributes = [word for word in tokens if word.lower().strip() not in stop_words]
+    
+    return sentiment_result, attributes
 
-# Streamlit App
+# Modify Streamlit app to display sentiment and attributes
 def main():
     st.title("Hotel Review Sentiment Analyzer")
 
@@ -82,7 +89,7 @@ def main():
     if st.button("Analyze Sentiment"):
         # Clean and analyze sentiment
         cleaned_review = clean_text(review)
-        result = predict_sentiment(cleaned_review)
+        result, attributes = predict_sentiment(cleaned_review)
 
         # Display result
         st.subheader("Analysis Result:")
@@ -91,5 +98,11 @@ def main():
         else:
             st.error("Negative Sentiment 😡")
 
+        # Display attributes
+        st.subheader("Attributes:")
+        st.write(", ".join(attributes))
+
 if __name__ == "__main__":
     main()
+
+
